@@ -1,0 +1,1 @@
+extern "C" __declspec(dllexport) float* process_audio(float* audio, size_t samples, uint32_t sample_rate);

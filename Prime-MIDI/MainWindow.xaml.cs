@@ -557,41 +557,21 @@ namespace Prime_MIDI
             object lck = new object();
             Stopwatch s = new Stopwatch();
             s.Start();
-            Parallel.For(0, fftResultLen, i =>
+            unsafe
             {
-                float key = i / (float)fftSamplesPerKey - 0.5f / fftSamplesPerKey;
-                float freq = (float)Math.Pow(2, (key - 69 + 9 - 7 * 3 + 12 * 1) / 12) * 440;
-                int waveSize = (int)(sampleRate / freq) * wavelengthsPerSample;
-                double waveStep = (double)waveSize * fftWidth / len;
-                waveStep /= precisionMultiplier;
-                if (waveStep < 1) waveStep = 1;
-                waveStep = waveStep / fftWidth * len;
-                if (waveSize < 1000) waveSize = 1000;
-                for (double _l = 0; _l + waveSize < len; _l += waveStep)
+                fixed (float* input_ptr = datafull)
                 {
-                    var l = (int)_l;
-                    float mult = freq / sampleRate * (float)Math.PI * 2;
-                    float sum_r = 0;
-                    float sum_i = 0;
-                    for (int j = 0; j < waveSize; j++)
+                    float* output_ptr = (float*)CudaFFT.process_audio((IntPtr)input_ptr, (ulong)len, (uint)sampleRate);
+                    ulong idx = 0;
+                    for (int x = 0; x < fftWidth; x++)
                     {
-                        float a = mult * j + (float)Math.PI;
-                        sum_r += (float)Math.Cos(a) * datafull[l + j];
-                        sum_i += (float)Math.Sin(a) * datafull[l + j];
-                    }
-                    var val = (Math.Abs(sum_r) + Math.Abs(sum_i)) / waveSize;
-                    int start = (int)((double)l * fftWidth / len);
-                    int end = (int)((double)(l + waveSize) * fftWidth / len);
-                    for (int p = start; p <= end; p++)
-                    {
-                        result[p, i] = val;
+                        for (int y = 0; y < fftResultLen; y++)
+                        {
+                            result[x, y] = output_ptr[idx++];
+                        }
                     }
                 }
-                lock (lck)
-                {
-                    Console.WriteLine("Processed frequency bands: " + (++progress));
-                }
-            });
+            }
             Console.WriteLine("Complete! Seconds spent: " + Math.Round(s.ElapsedMilliseconds / 1000.0, 1));
 
             return result;
