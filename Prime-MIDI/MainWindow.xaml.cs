@@ -455,7 +455,15 @@ namespace Prime_MIDI
             var newLeft = leftEase.End;
             var newRight = rightEase.End;
 
-            if (Keyboard.IsKeyDown(Key.LeftAlt))
+            if (Keyboard.IsKeyDown(Key.LeftAlt) && Keyboard.IsKeyDown(Key.LeftCtrl))
+            {
+                var leftDist = (pos.X - keyboardBox.ActualWidth) / imgRender.ActualWidth;
+                var control = newLeft + (newRight - newLeft) * leftDist;
+                var mult = Math.Pow(1.2, e.Delta / 120);
+                newLeft = (newLeft - control) * mult + control;
+                newRight += newLeft - leftEase.End;
+            }
+            else if (Keyboard.IsKeyDown(Key.LeftAlt))
             {
                 altScrolled = true;
                 var topDist = pos.Y / containerGrid.ActualHeight;
