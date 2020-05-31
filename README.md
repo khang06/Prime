@@ -1,5 +1,5 @@
 # Prime-CUDA
-Prime-MIDI, but 40 or so times faster with GPU acceleration!
+Prime-MIDI, but 40 or so times faster with GPU acceleration! Also you can scroll horizontally holding CTRL+ALT now.
 
 ## Building
 Prerequisites: Visual Studio 2019, CUDA Toolkit 10.2 (other versions might work too)
